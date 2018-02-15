@@ -5,7 +5,7 @@ var BODY = 1, FOOD = 2;
 var KEYS = {left: 37, up: 38, right: 39, down: 40};
 var DIRS = {37: true, 38: true, 39: true, 40: true};
 
-var SnakeGame = React.createClass({
+var SnakeGame = React.createClass({displayName: 'SnakeGame',
   getInitialState: function() {
     var start = this.props.startIndex || 21;
     var snake = [start], board = []; board[start] = BODY;
@@ -83,6 +83,10 @@ var SnakeGame = React.createClass({
       direction: direction
     });
 
+    if (hitWall(direction, head, numRows, numCols)) {
+      this.setState({gameOver: true});
+      return;
+    }
     setTimeout(this._tick, 100);
   }),
 
@@ -105,31 +109,46 @@ var SnakeGame = React.createClass({
       for (var col = 0; col < numCols; col++) {
         var code = this.state.board[numCols * row + col];
         var type = code == BODY ? 'body' : code == FOOD ? 'food' : 'null';
-        cells.push(<div class={type + '-cell'} />);
+        cells.push(React.DOM.div( {className:type + '-cell'}, null ));
       }
     }
 
     return (
-      <div class="snake-game">
-        <h1 class="snake-score">Length: {this.state.snake.length}</h1>
-        <div
-          ref="board"
-          class={'snake-board' + (this.state.gameOver ? ' game-over' : '')}
-          tabIndex={0}
-          onBlur={this._pause}
-          onFocus={this._resume}
-          onKeyDown={this._handleKey}
-          style={{width: numCols * cellSize, height: numRows * cellSize}}>
-          {cells}
-        </div>
-        <div class="snake-controls">
-          {this.state.paused ? <button onClick={this._resume}>Resume</button> : null}
-          {this.state.gameOver ? <button onClick={this._reset}>New Game</button> : null}
-        </div>
-      </div>
+      React.DOM.div( {className:"snake-game"}, [
+        React.DOM.h1( {className:"snake-score"}, ["Length: ", this.state.snake.length]),
+        React.DOM.div(
+          {ref:"board",
+          className:'snake-board' + (this.state.gameOver ? ' game-over' : ''),
+          tabIndex:0,
+          onBlur:this._pause,
+          onFocus:this._resume,
+          onKeyDown:this._handleKey,
+          style:{width: numCols * cellSize, height: numRows * cellSize}},
+          cells
+        ),
+        React.DOM.div( {className:"snake-controls"}, [
+          this.state.paused ? React.DOM.button( {onClick:this._resume}, "Resume") : null,
+          this.state.gameOver ? React.DOM.button( {onClick:this._reset}, "New Game") : null
+        ])
+      ])
     );
   }
 });
+
+function hitWall(direction, head, numRows, numCols){
+  var x = head % numCols;
+  var y = Math.floor(head / numCols);
+  var result = false;
+
+  switch (direction) {
+    case KEYS.up:    result = (y == 0) ? true : false; break;
+    case KEYS.down:  result = (y == numRows - 1) ? true : false; break;
+    case KEYS.left:  result = (x == 0) ? true : false; break;
+    case KEYS.right: result = (x == numCols - 1) ? true : false; break;
+    default: return result;
+  }
+  return result;
+}
 
 function getNextIndex(head, direction, numRows, numCols) {
   // translate index into x/y coords to make math easier
@@ -141,7 +160,7 @@ function getNextIndex(head, direction, numRows, numCols) {
     case KEYS.up:    y = y <= 0 ? numRows - 1 : y - 1; break;
     case KEYS.down:  y = y >= numRows - 1 ? 0 : y + 1; break;
     case KEYS.left:  x = x <= 0 ? numCols - 1 : x - 1; break;
-    case KEYS.right: x = x >= numCols - 1 ? 0 : x + 1; break;
+    case KEYS.right: x = x >= numCols ? 0 : x + 1; break;
     default: return;
   }
 
@@ -149,4 +168,4 @@ function getNextIndex(head, direction, numRows, numCols) {
   return (numCols * y) + x;
 }
 
-React.renderComponent(<SnakeGame />, document.body);
+React.renderComponent(SnakeGame(null, null ), document.body);
