@@ -138,10 +138,6 @@ var SnakeGame = React.createClass({displayName: 'SnakeGame',
 function hitWall(direction, head, numRows, numCols){
   var x = head % numCols;
   var y = Math.floor(head / numCols);
-
-  console.log("x value:" + x + " y value: " + y);
-  console.log("col : " + numCols + " row " + numRows);
-  console.log(x== numCols);
   var result = false;
 
   switch (direction) {
