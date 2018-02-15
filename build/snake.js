@@ -83,6 +83,10 @@ var SnakeGame = React.createClass({displayName: 'SnakeGame',
       direction: direction
     });
 
+    if (hitWall(direction, head, numRows, numCols)) {
+      this.setState({gameOver: true});
+      return;
+    }
     setTimeout(this._tick, 100);
   }),
 
@@ -131,16 +135,20 @@ var SnakeGame = React.createClass({displayName: 'SnakeGame',
   }
 });
 
-function hitWall(direction, head){
+function hitWall(direction, head, numRows, numCols){
   var x = head % numCols;
   var y = Math.floor(head / numCols);
+
+  console.log("x value:" + x + " y value: " + y);
+  console.log("col : " + numCols + " row " + numRows);
+  console.log(x== numCols);
   var result = false;
 
   switch (direction) {
     case KEYS.up:    result = (y == 0) ? true : false; break;
-    case KEYS.down:  result = (y == this.props.numRows) ? true : false; break;
+    case KEYS.down:  result = (y == numRows - 1) ? true : false; break;
     case KEYS.left:  result = (x == 0) ? true : false; break;
-    case KEYS.right: result = (x == this.props.numCols) ? true : false; break;
+    case KEYS.right: result = (x == numCols - 1) ? true : false; break;
     default: return result;
   }
   return result;
@@ -156,7 +164,7 @@ function getNextIndex(head, direction, numRows, numCols) {
     case KEYS.up:    y = y <= 0 ? numRows - 1 : y - 1; break;
     case KEYS.down:  y = y >= numRows - 1 ? 0 : y + 1; break;
     case KEYS.left:  x = x <= 0 ? numCols - 1 : x - 1; break;
-    case KEYS.right: x = x >= numCols - 1 ? 0 : x + 1; break;
+    case KEYS.right: x = x >= numCols ? 0 : x + 1; break;
     default: return;
   }
 
